@@ -1,184 +1,180 @@
 import React, { useState, useEffect } from "react";
 import { Paper, TextField, Checkbox, Button } from "@material-ui/core";
 
-import { useStyles } from './App.styles'
+import { useStyles } from "./App.styles";
 import {
-    addTask,
-    getTasks,
-    updateTask,
-    deleteTask,
+  addTask,
+  getTasks,
+  updateTask,
+  deleteTask,
 } from "./services/taskServices";
 
 const App = () => {
-    const [todos, setTodos] = useState({
-        tasks: [{}],
-        curTask: ''
-    })
+  const [todos, setTodos] = useState({
+    tasks: [],
+    curTask: "",
+  });
 
-    const styles = useStyles();
+  const styles = useStyles();
 
-    useEffect(() => {
-        // try {
-        //     const { data } =  getTasks();
+  useEffect(() => {
+    // try {
+    //     const { data } =  getTasks();
 
-        //     setTodos( {
-        //         ...todos,
-        //         tasks: data
-        //     } );
-        // } catch (error) {
-        //     console.log(error);
-        // }
+    //     setTodos( {
+    //         ...todos,
+    //         tasks: data
+    //     } );
+    // } catch (error) {
+    //     console.log(error);
+    // }
 
-        const fetchData = async () => {
-            const { data } = await getTasks()
+    const fetchData = async () => {
+      const { data } = await getTasks();
 
-            setTodos( {
-                ...todos,
-                tasks: data
-            } );
-        }
-
-        fetchData()
-            .catch(console.error)
-
-    }, [])
-
-    const handleChange = ({ currentTarget: input }) => {
-        setTodos( {
-            ...todos,
-            curTask: input.value
-        } );
+      setTodos({
+        tasks: data,
+        curTask: "",
+      });
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        const originalTasks = todos.tasks;
+    fetchData().catch(console.error);
+  }, []);
 
-        try {
-            const { data } = await addTask( todos.curTask );
-            const tasks = originalTasks;
+  const handleChange = ({ currentTarget: input }) => {
+    setTodos({
+      ...todos,
+      curTask: input.value,
+    });
+    // console.log(todos);
+  };
 
-            tasks.push(data);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const originalTasks = todos.tasks;
 
-            setTodos({ tasks, curTask: "" });
-        } catch (error) {
-            console.log(error);
-        }
-    };
+    try {
+      const { data } = await addTask({ task: todos.curTask });
+      const tasks = originalTasks;
 
-    const handleUpdate = async (currentTask) => {
-        const originalTasks = todos.tasks;
+      // console.log(data);
 
-        try {
-            const tasks = [...originalTasks];
-            const index = tasks.findIndex((task) => task._id === currentTask);
+      tasks.push(data);
+      // console.log(tasks);
 
-            tasks[index] = { ...tasks[index] };
-            tasks[index].completed = !tasks[index].completed;
+      setTodos({ tasks: tasks, curTask: "" });
+      // console.log(todos);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
-            setTodos({ 
-                ...todos,
-                tasks 
-            });
+  const handleUpdate = async (currentTask) => {
+    const originalTasks = todos.tasks;
 
-            await updateTask(currentTask, {
-                completed: tasks[index].completed,
-            });
-        } catch (error) {
-            setTodos({ 
-                ...todos,
-                tasks: originalTasks 
-            });
+    try {
+      const tasks = [...originalTasks];
+      const index = tasks.findIndex((task) => task._id === currentTask);
 
-            console.log(error);
-        }
-    };
+      tasks[index] = { ...tasks[index] };
+      tasks[index].completed = !tasks[index].completed;
 
-    const handleDelete = async (currentTask) => {
-        const originalTasks = todos.tasks;
+      setTodos({
+        ...todos,
+        tasks,
+      });
 
-        try {
-            const tasks = originalTasks.filter(
-                (task) => task._id !== currentTask
-            );
+      await updateTask(currentTask, {
+        completed: tasks[index].completed,
+      });
+    } catch (error) {
+      setTodos({
+        ...todos,
+        tasks: originalTasks,
+      });
 
-            setTodos({ 
-                ...todos,
-                tasks 
-            });
+      console.log(error);
+    }
+  };
 
-            await deleteTask(currentTask);
-        } catch (error) {
-            setTodos({ 
-                ...todos,
-                tasks: originalTasks
-            });
+  const handleDelete = async (currentTask) => {
+    const originalTasks = todos.tasks;
 
-            console.log(error);
-        }
-    };
+    try {
+      const tasks = originalTasks.filter((task) => task._id !== currentTask);
 
+      setTodos({
+        ...todos,
+        tasks,
+      });
 
-    
-    return (
-        <div className="App flex">
-            <Paper elevation={3} className="container">
-                <div className={styles.heading}>TO-DO</div>
-                <form
-                    className={styles.flex}
-                    onSubmit={handleSubmit()}
+      console.log(currentTask);
+
+      await deleteTask(currentTask);
+    } catch (error) {
+      setTodos({
+        ...todos,
+        tasks: originalTasks,
+      });
+
+      console.log(error);
+    }
+  };
+
+  return (
+    <div className={`${styles.app} ${styles.flex}`}>
+      <Paper elevation={3} className={styles.container}>
+        <div className={styles.heading}>TO-DO</div>
+        <form className={styles.flex} onSubmit={handleSubmit}>
+          <TextField
+            variant="outlined"
+            size="small"
+            className={styles.input_todo}
+            value={todos.curTask}
+            required={true}
+            onChange={handleChange}
+            placeholder="Add New TO-DO"
+          />
+          <Button
+            className={styles.submit}
+            color="primary"
+            variant="outlined"
+            type="submit"
+          >
+            Add
+          </Button>
+        </form>
+        <div>
+          {todos.tasks &&
+            todos.tasks.map((task) => (
+              <Paper
+                key={task._id}
+                className={`${styles.flex} ${styles.task_container}`}
+              >
+                <Checkbox
+                  checked={task.completed}
+                  onClick={() => handleUpdate(task._id)}
+                  color="primary"
+                />
+                <div
+                  className={` ${styles.task} ${
+                    task.completed ? styles.line_through : ""
+                  }`}
                 >
-                    <TextField
-                        variant="outlined"
-                        size="small"
-                        className={styles.input_todo}
-                        value={todos.curTask}
-                        required={true}
-                        onChange={handleChange()}
-                        placeholder="Add New TO-DO"
-                    />
-                    <Button
-                        className={styles.submit}
-                        color="primary"
-                        variant="outlined"
-                        type="submit"
-                    >
-                        Add task
-                    </Button>
-                </form>
-                <div>
-                    {todos.tasks && todos.tasks.map((task) => (
-                        <Paper
-                            key={task._id}
-                            className={`${styles.flex} ${styles.task_container}`}
-                        >
-                            <Checkbox
-                                checked={task.completed}
-                                onClick={handleUpdate(task._id)}
-                                color="primary"
-                            />
-                            <div
-                                className={` ${styles.task} 
-                                    ${task.completed 
-                                    ? styles.line_through 
-                                    : ''}
-                                `}
-                            >
-                                {todos.task}
-                            </div>
-                            <Button
-                                color="secondary"
-                                onClick={() => handleDelete(todos.tasks._id)}
-                            >
-                                delete
-                            </Button>
-                        </Paper>
-                    ))}
+                  {task.task}
                 </div>
-            </Paper>
+                <Button
+                  color="secondary"
+                  onClick={() => handleDelete(task._id)}
+                >
+                  delete
+                </Button>
+              </Paper>
+            ))}
         </div>
-    );
-}
-
+      </Paper>
+    </div>
+  );
+};
 
 export default App;
