@@ -18,17 +18,6 @@ const App = () => {
   const styles = useStyles();
 
   useEffect(() => {
-    // try {
-    //     const { data } =  getTasks();
-
-    //     setTodos( {
-    //         ...todos,
-    //         tasks: data
-    //     } );
-    // } catch (error) {
-    //     console.log(error);
-    // }
-
     const fetchData = async () => {
       const { data } = await getTasks();
 
@@ -46,7 +35,6 @@ const App = () => {
       ...todos,
       curTask: input.value,
     });
-    // console.log(todos);
   };
 
   const handleSubmit = async (e) => {
@@ -57,13 +45,9 @@ const App = () => {
       const { data } = await addTask({ task: todos.curTask });
       const tasks = originalTasks;
 
-      // console.log(data);
-
       tasks.push(data);
-      // console.log(tasks);
 
       setTodos({ tasks: tasks, curTask: "" });
-      // console.log(todos);
     } catch (error) {
       console.log(error);
     }
@@ -108,8 +92,6 @@ const App = () => {
         tasks,
       });
 
-      console.log(currentTask);
-
       await deleteTask(currentTask);
     } catch (error) {
       setTodos({
@@ -152,7 +134,7 @@ const App = () => {
                 className={`${styles.flex} ${styles.task_container}`}
               >
                 <Checkbox
-                  checked={task.completed}
+                  checked={!!task.completed}
                   onClick={() => handleUpdate(task._id)}
                   color="primary"
                 />

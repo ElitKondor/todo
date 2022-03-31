@@ -1,10 +1,16 @@
 const tasks = require("./routes/tasks");
-const connection = require("./db");
+const db = require("./db");
 const cors = require("cors");
 const express = require("express");
 const app = express();
 
-connection();
+db.connect((err) => {
+  if (err) {
+    throw err;
+  }
+
+  console.log("MySQL Connected");
+});
 
 app.use(express.json());
 app.use(cors());
